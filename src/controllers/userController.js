@@ -145,7 +145,7 @@ const loginUser = async function (req, res) {
             "project/productManagementGroup7"// => secret key
         );
 
-        //   res.status(200).setHeader("x-api-key", token);
+        //res.status(200).setHeader("x-api-key", token);
         return res.status(200).send({ status: true, message: "Successful login", data: { userId: user._id, token: token } })
     } catch (err) {
         return res.status(500).send({ status: false, message: err.message })
@@ -166,4 +166,6 @@ const getUserById = async (req, res) => {
     }
 }
 
-module.exports = { createUser, loginUser, getUserById,  }
+
+
+module.exports = { createUser, loginUser,getUserById }
