@@ -3,58 +3,50 @@ const validator = require('../validation/validation')
 const jwt = require('jsonwebtoken')
 const mongoose = require('mongoose')
 
-// const authentication = (req, res, next) => {
+
+// const authentication = async function(req, res, next) {
 //     try {
-//         let token = req.headers['x-api-key']
-//         // console.log(token)//
-        
-//         if (!validator.isValid(token) || typeof token == "undefined") return res.status(400).send({ status: false, Message: "Please Enter token" })
-//         // console.log(token)
-//         // split and get the token only 
-//         const bearer = token.split(' ') 
-//         const bearerToken = bearer[1]
+//         ///const token = req.rawHeaders("Bearer ", "")
+//         
 
-//         //     const decoded=jwt.decode(token)
-//         //     if (Date.now() > (decoded.exp) * 1000) {
-//         //   return res.status(440).send({ status: false, message: "Session expired! Please login again." })
-//         jwt.verify(bearerToken, 'project/booksManagementGroup7', function (err, decode) {
+//         if (!token) {
+//             return res.status(400).send({ status: false, message: "required token" })
+//         }
+
+//         jwt.verify(token, "project/productManagementGroup7", function(err, decoded) {
 //             if (err) {
-//                 return res.status(401).send({ status: false, Message: err.message })
-//             } else {
-//                 console.log(decode)
-//                 req.tokenData = decode;
-//                 if (decode.exp > Date.now()) {
-//                     next()
-//                 } else {
-//                     return res.status(401).send({ status: false, message: "token has been expired" })
-//                 }
-
-
+//                 return res.status(401).send({ status: false, message: err.message })
 //             }
+//             req.tokenData = decoded
+//             next()
 //         })
 //     } catch (err) {
 //         res.status(500).send({ status: false, Message: err.message })
 //     }
 // }
-
-
-const authentication = async function(req, res, next) {
+const authentication = async function (req, res, next) {
     try {
-        const token = req.rawHeaders[1].replace("Bearer ", "")
+        const bearerHeader = req.headers['authorization'];
+        //check if bearer is undefined
+        if (typeof bearerHeader !== 'undefined') {
+            //split the space at the bearer
+            const bearer = bearerHeader.split(' ');
+            //Get token from string
+            const bearerToken = bearer[1];
 
-        if (!token) {
-            return res.status(400).send({ status: false, message: "required token" })
-        }
+            jwt.verify(bearerToken, "project/productManagementGroup7", (err, decodedToken) => {
+                if (err && err.message == "jwt expired") return res.status(401).send({ status: false, message: "Session expired! Please login again." })
+                if (err) return res.status(401).send({ status: false, message: "Incorrect token" })
+                //set the token
+                req.tokenData = decodedToken;
+                //next middleweare
+                next();
+            })
 
-        jwt.verify(token, "project/productManagementGroup7", function(err, decoded) {
-            if (err) {
-                return res.status(401).send({ status: false, message: err.message })
-            }
-            req.tokenData = decoded
-            next()
-        })
-    } catch (err) {
-        res.status(500).send({ status: false, Message: err.message })
+        }else return res.status(401).send({status:false, message: "token must be present"})
+    }
+    catch (err) {
+        return res.status(500).send({ status: false, message: err.message });
     }
 }
 
