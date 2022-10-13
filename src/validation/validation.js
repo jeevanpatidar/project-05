@@ -18,5 +18,9 @@ let isValidPassword=function(password){
     return passwordRegex.test(password)
 }
 
+function isBoolean(value) {
+    if (value == "true" || value == "false") { return true }
+    return false
+}
 
-module.exports={isValid,isValidBody,isValidEmail,isValidPassword}
+module.exports={isValid,isValidBody,isValidEmail,isValidPassword,isBoolean}
