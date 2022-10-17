@@ -146,7 +146,7 @@ const getProduct = async function (req, res) {
         if (price3) {
             if (!Number(priceGreaterThan)) return res.status(400).send({ status: false, message: "priceGreaterThan should be in valid number/decimal format" })
             if (!Number(priceLessThan)) return res.status(400).send({ status: false, message: "priceLessThan should be in valid number/decimal format" })
-            objectFilter["price"] = {  $lte: priceLessThan,$gte: priceGreaterThan}
+            objectFilter["price"] = { $lte: priceLessThan, $gte: priceGreaterThan }
         }
 
         const foundProducts = await productModel.find(objectFilter).select({ __v: 0 })
@@ -231,24 +231,24 @@ const getProductById = async (req, res) => {
     }
 }
 
-const updateProduct = async function(req, res) {
+const updateProduct = async function (req, res) {
     try {
         let productId = req.params.productId
         let data = req.body
 
-        if(!productId)  return res.status(400).send({ status: false, message: "ProductId is required" })
+        if (!productId) return res.status(400).send({ status: false, message: "ProductId is required" })
         //if (!validator.isValid(productId)) return res.status(400).send({ status: false, message: "Incorrect productId" })
         //if (!productId.match(objectid)) return res.status(400).send({ status: false, message: "Incorrect productId" }
         if (!mongoose.isValidObjectId(productId)) return res.status(400).send({ status: false, message: `${productId} is not a valid productId` })
         const products = await productModel.findOne({ _id: productId, isDeleted: false })
         if (!products) return res.status(404).send({ status: false, message: "productId Not found" })
-       
-        
+
+
         let product = await productModel.findById(productId)
-        if(!product || product.isDeleted == true)    return res.status(404).send({ status: false, message: "Product not found" })
+        if (!product || product.isDeleted == true) return res.status(404).send({ status: false, message: "Product not found" })
 
         if (!validator.isValidBody(data) && !req.files) return res.status(400).send({ status: false, message: "Please provide data to update" })
-        let {title, description, price, currencyId, currencyFormat, isFreeShipping,  style, availableSizes, installments, productImage, isDeleted} = data
+        let { title, description, price, currencyId, currencyFormat, isFreeShipping, style, availableSizes, installments, productImage, isDeleted } = data
 
         if (title) {
             if (!validator.isValid(title)) return res.status(400).send({ status: false, message: "title is in incorrect format" })
@@ -280,7 +280,7 @@ const updateProduct = async function(req, res) {
         //currency format validation
         if (currencyFormat && currencyFormat.trim().length !== 0) {
             if (currencyFormat !== "₹") return res.status(400).send({ status: false, message: "only indian currencyFormat is allowed and the type should be string" })
-        } 
+        }
         //isFreeShipping validation
         if (isFreeShipping) {
             if (isFreeShipping == "true" || isFreeShipping == "false" || typeof isFreeShipping === "boolean") { }
@@ -288,7 +288,7 @@ const updateProduct = async function(req, res) {
         }
 
         //productImage validation
-        if(productImage)    return res.status(400).send({ status: false, message: "only image files are allowed" })
+        if (productImage) return res.status(400).send({ status: false, message: "only image files are allowed" })
         if (req.files) {
             let image = req.files[0]
             if (image) {
@@ -322,20 +322,20 @@ const updateProduct = async function(req, res) {
                         return res.status(400).send({ status: false, message: `'${ele}' is not a valid size, only these sizes are allowed [S, XS, M, X, L, XXL, XL]` })
                     }
                 }
-                
+
                 data.availableSizes = uniqueSizes
             } else return res.status(400).send({ status: false, message: "availableSizes should be of type Array" })
         }
 
-        if(isDeleted) {
-            if(!(isDeleted == "true" || isDeleted == "false" || typeof isDeleted === "boolean"))
+        if (isDeleted) {
+            if (!(isDeleted == "true" || isDeleted == "false" || typeof isDeleted === "boolean"))
                 return res.status(400).send({ status: false, message: "isDeleted should be Boolean or true/false" })
-            if(isDeleted == true || isDeleted == "true") data.deletedAt = new Date
+            if (isDeleted == true || isDeleted == "true") data.deletedAt = new Date
         }
 
 
         let updatedProduct = await productModel.findOneAndUpdate({ _id: productId }, data, { new: true })
-        return res.status(200).send({ status: true,message: 'updated successfully', data: updatedProduct })
+        return res.status(200).send({ status: true, message: 'updated successfully', data: updatedProduct })
     } catch (err) {
         return res.status(500).send({ status: false, message: err.message })
     }
@@ -347,7 +347,7 @@ const deleteById = async (req, res) => {
         if (!mongoose.isValidObjectId(productId)) return res.status(400).send({ status: false, message: `Invalid ProductId` })
         const product = await productModel.findOne({ _id: productId })
         if (!product) return res.status(404).send({ status: false, message: "productId Not found" })
-        if(product.isDeleted==true)return res.status(404).send({ status: false, message: `This product is not found` })
+        if (product.isDeleted == true) return res.status(404).send({ status: false, message: `This product is not found` })
         const updateProduct = await productModel.findOneAndUpdate({ _id: productId }, { isDeleted: true, deletedAt: new Date() }, { new: true }).select({ __v: 0 })
         return res.status(200).send({ status: true, message: 'deleted successfully', data: updateProduct })
 

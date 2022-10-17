@@ -43,7 +43,7 @@ const authentication = async function (req, res, next) {
                 next();
             })
 
-        }else return res.status(401).send({status:false, message: "token must be present"})
+        } else return res.status(401).send({ status: false, message: "token must be present" })
     }
     catch (err) {
         return res.status(500).send({ status: false, message: err.message });
