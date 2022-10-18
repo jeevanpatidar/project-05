@@ -1,3 +1,4 @@
+//=======================================Importing Module and Packages================================================
 const mongoose = require("mongoose");
 
 const userSchema = new mongoose.Schema(
@@ -22,4 +23,5 @@ const userSchema = new mongoose.Schema(
     },
   }, { timestamps: true });
 
+//====================================Module Export=============================================================
 module.exports = mongoose.model("User", userSchema);

@@ -1,29 +1,9 @@
+//=======================================Importing Module and Packages====================================================
 const userModel = require('../Model/userModel')
-const validator = require('../validation/validation')
 const jwt = require('jsonwebtoken')
 const mongoose = require('mongoose')
 
-
-// const authentication = async function(req, res, next) {
-//     try {
-//         ///const token = req.rawHeaders("Bearer ", "")
-//         
-
-//         if (!token) {
-//             return res.status(400).send({ status: false, message: "required token" })
-//         }
-
-//         jwt.verify(token, "project/productManagementGroup7", function(err, decoded) {
-//             if (err) {
-//                 return res.status(401).send({ status: false, message: err.message })
-//             }
-//             req.tokenData = decoded
-//             next()
-//         })
-//     } catch (err) {
-//         res.status(500).send({ status: false, Message: err.message })
-//     }
-// }
+//====================================check authentication=============================================================
 const authentication = async function (req, res, next) {
     try {
         const bearerHeader = req.headers['authorization'];
@@ -49,7 +29,7 @@ const authentication = async function (req, res, next) {
         return res.status(500).send({ status: false, message: err.message });
     }
 }
-
+//====================================check authorization=============================================================
 const authorization = async (req, res, next) => {
     // get user id fron params
     const userId = req.params.userId
@@ -69,5 +49,5 @@ const authorization = async (req, res, next) => {
 
     next()
 }
-
+//====================================Module Export=============================================================
 module.exports = { authentication, authorization }

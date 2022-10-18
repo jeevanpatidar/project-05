@@ -1,3 +1,4 @@
+//=======================================Importing Module and Packages===========================================
 const mongoose = require("mongoose");
 const objectId = mongoose.Schema.Types.ObjectId;
 
@@ -12,4 +13,5 @@ const cartSchema = new mongoose.Schema({
     totalItems: { type: Number, required: true, },
 }, { timestamps: true })
 
+//====================================Module Export=============================================================
 module.exports = mongoose.model('Cart', cartSchema);

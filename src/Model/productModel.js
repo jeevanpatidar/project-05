@@ -1,4 +1,4 @@
-
+//=======================================Importing Module and Packages================================================
 const mongoose = require('mongoose')
 
 const productSchema = new mongoose.Schema({
@@ -16,4 +16,5 @@ const productSchema = new mongoose.Schema({
     isDeleted: { type: Boolean, default: false }
 }, { timestamps: true })
 
+//====================================Module Export=============================================================
 module.exports = mongoose.model('Product', productSchema)

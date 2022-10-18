@@ -1,3 +1,4 @@
+//=======================================Importing Module and Packages============================================
 const userModel = require("../Model/userModel")
 const bcrypt = require("bcrypt")
 const validator = require("../validation/validation")
@@ -6,8 +7,7 @@ const mongoose = require("mongoose")
 const { uploadFile } = require("./aws")
 
 const phoneRex = /^[6789][0-9]{9}$/
-
-
+//======================================================createUser=========================================================
 const createUser = async (req, res) => {
     try {
         //fetching data present in request body 
@@ -47,13 +47,11 @@ const createUser = async (req, res) => {
 
         //password
         if (!validator.isValid(password)) return res.status(400).send({ status: false, message: `Password is required` })
-        if (!validator.isValidPassword(password)) return res.status(400).send({ status: false, message: `Password must between 8-5 and contain a Capital,Symbol,Numeric` })
+        if (!validator.isValidPassword(password)) return res.status(400).send({ status: false, message: `Password must between 8-15 and contain a Capital,Symbol,Numeric` })
 
         //address
         if (!validator.isValid(address))
             return res.status(400).json({ status: false, msg: "Address is required" });
-        // address=JSON.parse(address) 
-        //if (typeof address != "object") return res.status(400).json({ status: false, msg: "Please provide Address in Object" });
         address = JSON.parse(address)
         if (address) {
             if (typeof address != "object") return res.status(400).send({ status: false, message: "Please provide Address in Object" })
@@ -99,7 +97,6 @@ const createUser = async (req, res) => {
                 password: hashedPassword,
                 address: address,
             }
-
             const newUser = await userModel.create(userData);
             return res.status(201).send({ status: true, message: ` User created successfully`, data: newUser });
         }
@@ -107,7 +104,7 @@ const createUser = async (req, res) => {
         return res.status(500).send({ status: false, message: error.message });
     }
 }
-
+//======================================================loginUser=======================================================
 const loginUser = async function (req, res) {
     try {
         let loginData = req.body
@@ -118,13 +115,10 @@ const loginUser = async function (req, res) {
         let empStr = ""
         if (!validator.isValidEmail(email)) empStr = empStr + "Email "
         if (!validator.isValidPassword(password)) empStr = empStr + "Password"
-        if (!validator.isValidEmail(email) || !validator.isValidPassword(password)) {
-            return res.status(400).send({ status: false, message: `Please fill valid or mandatory ${empStr}` })
-        }
 
         let user = await userModel.findOne({ email: email });
         if (!user) {
-            return res.status(404).send({ status: false, message: "Email Not found" });
+            return res.status(404).send({ status: false, message: "email and pssword not found" });
         }
         //comparing hard-coded password to the hashed password
         const validPassword = await bcrypt.compare(password, user.password)
@@ -143,14 +137,12 @@ const loginUser = async function (req, res) {
             },
             "project/productManagementGroup7"// => secret key
         );
-
-        //   res.status(200).setHeader("x-api-key", token);
         return res.status(200).send({ status: true, message: "User login successfull", data: { userId: user._id, token: token } })
     } catch (err) {
         return res.status(500).send({ status: false, message: err.message })
     }
 }
-
+//======================================================getUserById========================================================
 const getUserById = async (req, res) => {
     try {
         const userId = req.params.userId
@@ -163,15 +155,13 @@ const getUserById = async (req, res) => {
         return res.status(500).send({ status: false, message: error.message })
     }
 }
-
+//======================================================updateUser=======================================================
 let updateUser = async (req, res) => {
     try {
         let userId = req.params.userId
         if (!mongoose.isValidObjectId(userId)) return res.status(400).send({ status: false, message: "You entered a Invalid userId in params" })
         const checkUserId = await userModel.findOne({ _id: userId })
         if (!checkUserId) return res.status(404).send({ status: false, message: "user not found" })
-        // if (userId != req.userId)
-        //     return res.status(400).send({ status: false, message: "Authorisation Failed--> you are not allowed to modify another acoount" })
 
         let data = req.body
         let files = req.files;
@@ -268,5 +258,5 @@ let updateUser = async (req, res) => {
         return res.status(500).send({ status: false, message: error.message })
     }
 }
-
+//===================================================Module Export====================================================
 module.exports = { createUser, loginUser, getUserById, updateUser }

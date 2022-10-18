@@ -6,7 +6,6 @@ aws.config.update({
     region: "ap-south-1"
 })
 
-
 let uploadFile = async (file) => {
     return new Promise(function (resolve, reject) {
         let s3 = new aws.S3({
@@ -28,5 +27,5 @@ let uploadFile = async (file) => {
         })
     })
 }
-
+//====================================Module Export=============================================================
 module.exports = { uploadFile }
