@@ -67,7 +67,7 @@ const createCart = async function (req, res) {
 
             totalPrice = totalPrice.toFixed(2)
             totalItems = itemsArr.length
-            const updatedCart = await cartModel.findOneAndUpdate({ _id: cartId }, ({ items: itemsArr, totalPrice: totalPrice, totalItems: totalItems }), { new: true }).select({ __v: 0 })
+            const updatedCart = await cartModel.findOneAndUpdate({ _id: cartId }, ({ items: itemsArr, totalPrice: totalPrice, totalItems: totalItems }), { new: true }).select({ __v: 0 }).populate([{ path: "items.productId" }])
 
             if (!updatedCart) return res.status(404).send({ status: false, message: "cart not found" })
 
@@ -219,7 +219,7 @@ const deleteById = async (req, res) => {
         if (!checkCart) return res.status(404).send({ status: false, message: "Cart not exist for this userId" })
         let deleteCart = await cartModel.findOneAndUpdate({ userId }, { items: [], totalItems: 0, totalPrice: 0 }, { new: true })
         if (deleteCart.totalPrice == 0) return res.status(404).send({ status: false, message: `cart already deleted` })
-        return res.status(200).send({ status: true, message: "cart deleted Successfully", data: deleteCart })
+        return res.status(204).send({ status: true, message: "cart deleted Successfully", data: deleteCart })
 
     } catch (err) {
         return res.status(500).send({ status: false, message: err.message })
