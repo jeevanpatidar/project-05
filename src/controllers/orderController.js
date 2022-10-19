@@ -5,7 +5,6 @@ const userModel = require("../Model/userModel")
 const productModel = require("../Model/productModel")
 const mongoose = require("mongoose")
 const validator = require("../validation/validation")
-
 //======================================================createOrder========================================================
 const createOrder = async function (req, res) {
     try {
