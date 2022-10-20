@@ -7,15 +7,12 @@ const { AppConfig } = require('aws-sdk')
 
 const app = express();
 
-
 app.use(express.json());
 app.use(multer().any())
-
 
 mongoose.connect("mongodb+srv://Mailarappa:XiyjAWCBrRkxLCoM@cluster0.gf6sdcb.mongodb.net/group7Database")
     .then(() => console.log("MongoDb is connected"))
     .catch((err) => console.log(err))
-
 
 app.use('/', route)
 

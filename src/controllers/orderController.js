@@ -2,7 +2,6 @@
 const orderModel = require("../Model/orderModel")
 const cartModel = require("../Model/cartModel")
 const userModel = require("../Model/userModel")
-const productModel = require("../Model/productModel")
 const mongoose = require("mongoose")
 const validator = require("../validation/validation")
 //======================================================createOrder========================================================
@@ -14,6 +13,9 @@ const createOrder = async function (req, res) {
         if (!findUser) return res.status(404).send({ status: false, message: "userId is not found" })
 
         let data = req.body
+        if (!validator.isValidBody(data)) {
+            return res.status(400).send({ status: false, message: "please provide data in the body" })
+        }
 
         let { cancellable, cartId } = data
         if (!cartId) {
@@ -21,7 +23,7 @@ const createOrder = async function (req, res) {
         }
 
         if (!validator.isValid(cartId)) return res.status(400).send({ status: false, message: "Incorrect cartId" })
-        if (!cartId) return res.status(400).send({ status: false, message: "Incorrect cartId" })
+        if (!mongoose.isValidObjectId(cartId)) return res.status(400).send({ status: false, message: "cartId is invalid" })
 
         const checkCart = await cartModel.findById(cartId)
         if (!checkCart) {
@@ -34,7 +36,6 @@ const createOrder = async function (req, res) {
         delete orderData["_id"]
 
         orderData["totalQuantity"] = 0
-        0
         let itemsArr = checkCart.items
         for (i = 0; i < itemsArr.length; i++) {
             orderData.totalQuantity += itemsArr[i].quantity
@@ -65,14 +66,25 @@ const updateOrder = async (req, res) => {
 
         let findUser = await userModel.findById({ _id: userId })
         if (!findUser) return res.status(404).send({ status: false, message: "No such User found" })
-        //authorization
-        if (userId != req.tokenData.userId) return res.status(401).send({ status: false, Message: "Unauthorized user!" })
 
-        let findCart = await cartModel.findOne({ userId: userId })
+        let cartId = req.body.cartId
+        if (!cartId)
+            return res.status(400).send({ status: false, message: "cartId is required" })
+        if (!mongoose.isValidObjectId(cartId)) return res.status(400).send({ status: false, message: "You entered an invalid cartId" })
+        let findCart = await cartModel.findById({ _id: cartId })
         if (!findCart)
             return res.status(404).send({ status: false, message: "No cart found....." })
 
+        let data = req.body
+        if (!validator.isValidBody(data)) {
+            return res.status(400).send({ status: false, message: "please provide data in the body" })
+        }
+
         let orderId = req.body.orderId
+
+        if (!validator.isValidBody(data)) {
+            return res.status(400).send({ status: false, message: "please provide data in the body" })
+        }
 
         if (!orderId)
             return res.status(400).send({ status: false, message: "OrderId is required" })
@@ -102,7 +114,6 @@ const updateOrder = async (req, res) => {
                     return res.status(400).send({ status: false, message: "This order is already canceled" })
                 checkCancellable.status = status
 
-                let updateCart = await cartModel.findOneAndUpdate({ userId: userId }, { $set: { items: [], totalPrice: 0, totalItems: 0 } }, { new: true })
                 let updateOrder = await orderModel.findOneAndUpdate({ _id: orderId }, { $set: checkCancellable }, { new: true })
 
                 return res.status(200).send({ status: true, message: "status updated successfully", data: updateOrder })
@@ -112,8 +123,6 @@ const updateOrder = async (req, res) => {
                     return res.status(400).send({ status: false, message: "This order is already completed" })
 
                 findOrder.status = status
-
-                let updateCart = await cartModel.findOneAndUpdate({ userId: userId }, { $set: { items: [], totalPrice: 0, totalItems: 0 } }, { new: true })
 
                 let updateOrder = await orderModel.findOneAndUpdate({ _id: orderId }, { $set: findOrder }, { new: true })
 

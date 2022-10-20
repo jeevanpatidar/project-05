@@ -19,7 +19,6 @@ const authentication = async function (req, res, next) {
                 if (err) return res.status(401).send({ status: false, message: "Incorrect token" })
                 //set the token
                 req.tokenData = decodedToken;
-                //next middleweare
                 next();
             })
 
@@ -45,7 +44,7 @@ const authorization = async (req, res, next) => {
     if (!user) return res.status(404).send({ status: false, Message: " No user found!" })
 
     // auth Z 
-    if (userId !== token.userId) return res.status(401).send({ status: false, Message: " Unauthorized user!" })
+    if (userId !== token.userId) return res.status(403).send({ status: false, Message: " Unauthorized user!" })
 
     next()
 }

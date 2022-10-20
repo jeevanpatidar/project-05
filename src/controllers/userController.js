@@ -14,7 +14,9 @@ const createUser = async (req, res) => {
         let files = req.files;
         const requestBody = req.body
 
-        if (!validator.isValidBody(requestBody)) return res.status(400).send({ status: false, message: 'Please provide user details' })
+        if (!validator.isValidBody(requestBody)) {
+            return res.status(400).send({ status: false, message: "please provide data in the body" })
+        }
         //Destructuring requestBody
         let { fname, lname, phone, email, password, address } = requestBody
         //--------------------------------Validation starts-------------------------------
@@ -31,7 +33,7 @@ const createUser = async (req, res) => {
         email = email.trim().toLowerCase()
         if (!validator.isValidEmail(email)) return res.status(400).send({ status: false, message: `Email should be a valid email address ` })
         const isEmailAlreadyUsed = await userModel.findOne({ email });
-        if (isEmailAlreadyUsed) return res.status(400).send({ status: false, message: `${email} email address is already registered` })
+        if (isEmailAlreadyUsed) return res.status(409).send({ status: false, message: `${email} email address is already registered` })
 
         //profileImage
         if (!files || (files && files.length === 0)) return res.status(400).send({ status: false, message: 'Profile image is required' })
@@ -41,9 +43,9 @@ const createUser = async (req, res) => {
         if (!validator.isValid(phone)) return res.status(400).send({ status: false, message: 'phone no is required' });
         phone = phone.trim()
         if (phone.length != 10) return res.status(400).send({ status: false, message: `${phone.length} is not valid phone number length` })
-        if (!phone.match(phoneRex)) return res.status(400).send({ status: false, message: `Please fill Indian phone number` })
+        if (!phone.match(phoneRex)) return res.status(400).send({ status: false, message: `Please fill Indian phone number with 1st no only(6,7,8,9)` })
         const isPhoneAlreadyUsed = await userModel.findOne({ phone });
-        if (isPhoneAlreadyUsed) return res.status(400).send({ status: false, message: `${phone} phone number is already registered` })
+        if (isPhoneAlreadyUsed) return res.status(409).send({ status: false, message: `${phone} phone number is already registered` })
 
         //password
         if (!validator.isValid(password)) return res.status(400).send({ status: false, message: `Password is required` })
@@ -55,15 +57,11 @@ const createUser = async (req, res) => {
         address = JSON.parse(address)
         if (address) {
             if (typeof address != "object") return res.status(400).send({ status: false, message: "Please provide Address in Object" })
-
             if (address) {
                 if (address.shipping) {
                     if (!validator.isValid(address.shipping.street)) return res.status(400).send({ status: false, Message: "Shipping Street is required" })
-
                     if (!validator.isValid(address.shipping.city)) return res.status(400).send({ status: false, Message: "Shipping city is required" })
-
                     if (!validator.isValid(address.shipping.pincode)) return res.status(400).send({ status: false, Message: "Shipping pincode is required" })
-
                     if (!/^[1-9][0-9]{5}$/.test(address.shipping.pincode)) return res.status(400).send({ status: false, message: "Shipping Pincode should in six digit Number" })
                 } else {
                     return res.status(400).send({ status: false, message: "please provide shipping address" })
@@ -71,17 +69,13 @@ const createUser = async (req, res) => {
 
                 if (address.billing) {
                     if (!validator.isValid(address.billing.street)) return res.status(400).send({ status: false, Message: "Billing street is required" })
-
                     if (!validator.isValid(address.billing.city)) return res.status(400).send({ status: false, Message: "Billing city is required" })
-
                     if (!validator.isValid(address.billing.pincode)) return res.status(400).send({ status: false, Message: "Billing pincode is required" })
-
                     if (!/^[1-9][0-9]{5}$/.test(address.billing.pincode)) return res.status(400).send({ status: false, message: "Billing pincode is invalid", })
                 } else {
                     return res.status(400).send({ status: false, message: "please provide billing address" })
                 }
             }
-
             // ---------------------------------Validation ends-------------------------------
             //generating salt
             const salt = await bcrypt.genSalt(10)
@@ -111,14 +105,17 @@ const loginUser = async function (req, res) {
         let { email, password } = loginData
 
         //validation
-        if (!validator.isValidBody(loginData)) return res.status(400).send({ status: false, message: "Please fill email or password" })
-        let empStr = ""
-        if (!validator.isValidEmail(email)) empStr = empStr + "Email "
-        if (!validator.isValidPassword(password)) empStr = empStr + "Password"
+        if (!validator.isValidBody(loginData)) return res.status(400).send({ status: false, message: "Please provide login credentials" })
+
+        if (!validator.isValid(email)) return res.status(400).send({ status: false, message: " email is mandatory" })
+        if (!validator.isValidEmail(email)) return res.status(400).send({ status: false, message: "Please provide valid email" })
+
+        if (!validator.isValid(password)) return res.status(400).send({ status: false, message: " password is mandatory" })
+        if (!validator.isValidPassword(password)) return res.status(400).send({ status: false, message: "Please provide valid password" })
 
         let user = await userModel.findOne({ email: email });
         if (!user) {
-            return res.status(404).send({ status: false, message: "email and pssword not found" });
+            return res.status(404).send({ status: false, message: "email is not found" });
         }
         //comparing hard-coded password to the hashed password
         const validPassword = await bcrypt.compare(password, user.password)
@@ -181,7 +178,7 @@ let updateUser = async (req, res) => {
             data.email = data.email.trim()
             if (!validator.isValid(data.email)) return res.status(400).send({ status: false, message: "email is empty" })
             let findEmail = await userModel.findOne({ email: data.email })
-            if (findEmail) return res.status(400).send({ status: false, message: "email is already exists please enter a new emailId " })
+            if (findEmail) return res.status(409).send({ status: false, message: "email is already exists please enter a new emailId " })
             if (validator.isValidEmail(data.email) == false) return res.status(400).send({ status: false, message: "You entered a Invalid email" })
             objectUpdate.email = data.email
         }
@@ -197,7 +194,7 @@ let updateUser = async (req, res) => {
             if (!validator.isValid(data.phone)) return res.status(400).send({ status: false, message: "phone is empty" })
             let findPhone = await userModel.findOne({ phone: data.phone })
             if (phoneRex.test(data.phone) == false) return res.status(400).send({ status: false, message: "You entered a Invalid phone number" })
-            if (findPhone) return res.status(400).send({ status: false, message: "This phone number is already exists" })
+            if (findPhone) return res.status(409).send({ status: false, message: "This phone number is already exists" })
             objectUpdate.phone = data.phone
         }
         if (data.password || data.password === "") {
@@ -251,7 +248,6 @@ let updateUser = async (req, res) => {
             }
         }
         let updateData = await userModel.findOneAndUpdate({ _id: userId }, { $set: objectUpdate, updatedAt: Date.now() }, { new: true })
-
         return res.status(200).send({ status: true, message: "User profile updated", data: updateData })
 
     } catch (error) {

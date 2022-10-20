@@ -19,7 +19,7 @@ const createProduct = async (req, res) => {
 
         if (!title) return res.status(400).send({ status: false, message: "title field is Required" })
         let findtitle = await productModel.findOne({ title: title })
-        if (findtitle) return res.status(400).send({ status: false, message: "This title is already exists" })
+        if (findtitle) return res.status(409).send({ status: false, message: "This title is already exists" })
         if (nameRegex.test(title) == false) return res.status(400).send({ status: false, message: "you entered a invalid Title" })
         objectCreate.title = title
 
@@ -76,7 +76,6 @@ const createProduct = async (req, res) => {
             if (newSize.includes(arrayOfSizes[j].trim())) continue;
             else newSize.push(arrayOfSizes[j].trim())
         }
-
         objectCreate.availableSizes = newSize
 
         if (installments) {
@@ -85,7 +84,7 @@ const createProduct = async (req, res) => {
         }
 
         let productCreate = await productModel.create(objectCreate)
-        return res.status(201).send({ status: true, message: "Document is created successfully", data: productCreate })
+        return res.status(201).send({ status: true, message: "product created successfully", data: productCreate })
     } catch (err) {
         return res.status(500).send({ status: false, message: err.message })
     }
@@ -195,10 +194,9 @@ const updateProduct = async function (req, res) {
             if (!validator.isValid(title)) return res.status(400).send({ status: false, message: "title is in incorrect format" })
             let isUniqueTitle = await productModel.findOne({ title: title });
             if (isUniqueTitle) {
-                return res.status(400).send({ status: false, message: "This title is being used already" })
+                return res.status(409).send({ status: false, message: "This title is being used already" })
             }
         }
-
         //description validation
         if (description) {
             if (!validator.isValid(description)) return res.status(400).send({ status: false, message: "description is in incorrect format" })
@@ -210,7 +208,6 @@ const updateProduct = async function (req, res) {
             if (priceRegex.test(price) == false) return res.status(400).send({ status: false, message: "you entered a invalid price" })
             data.price = price
         }
-
         //currencyID validation
         if (currencyId && currencyId.trim().length !== 0) {
             if (currencyId !== "INR") return res.status(400).send({ status: false, message: "only indian currencyId is allowed and the type should be string" })
@@ -224,7 +221,6 @@ const updateProduct = async function (req, res) {
             if (isFreeShipping == "true" || isFreeShipping == "false" || typeof isFreeShipping === "boolean") { }
             else return res.status(400).send({ status: false, message: "type should be Boolean or true/false" })
         }
-
         //productImage validation
         if (productImage) return res.status(400).send({ status: false, message: "only image files are allowed" })
         if (req.files) {
@@ -235,20 +231,17 @@ const updateProduct = async function (req, res) {
                 data.productImage = url
             }
         }
-
         //style validation
         if (style) {
             if (!validator.isValid(style) || !style.match(nameRegex))
                 return res.status(400).send({ status: false, message: "style is in incorrect format" })
         }
-
         //installments validation
         if (installments) {
             installments = parseInt(installments)
             if (!installments || typeof installments != "number")
                 return res.status(400).send({ status: false, message: "installments should be of type number" })
         }
-
         //availableSizes validation
         if (availableSizes) {
             availableSizes = availableSizes.split(",").map(ele => ele.trim())
@@ -271,9 +264,8 @@ const updateProduct = async function (req, res) {
             if (isDeleted == true || isDeleted == "true") data.deletedAt = new Date
         }
 
-
         let updatedProduct = await productModel.findOneAndUpdate({ _id: productId }, data, { new: true })
-        return res.status(200).send({ status: true, message: 'updated successfully', data: updatedProduct })
+        return res.status(200).send({ status: true, message: 'product updated successfully', data: updatedProduct })
     } catch (err) {
         return res.status(500).send({ status: false, message: err.message })
     }
@@ -287,7 +279,7 @@ const deleteById = async (req, res) => {
         if (!product) return res.status(404).send({ status: false, message: "productId Not found" })
         if (product.isDeleted == true) return res.status(404).send({ status: false, message: `product already deleted` })
         const updateProduct = await productModel.findOneAndUpdate({ _id: productId }, { isDeleted: true, deletedAt: new Date() }, { new: true }).select({ __v: 0 })
-        return res.status(200).send({ status: true, message: 'deleted successfully', data: updateProduct })
+        return res.status(200).send({ status: true, message: 'product deleted successfully', data: updateProduct })
 
     } catch (error) {
         return res.status(500).send({ status: false, message: error.message })

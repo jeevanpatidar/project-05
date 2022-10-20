@@ -21,14 +21,14 @@ router.put("/products/:productId", productController.updateProduct)
 router.delete("/products/:productId", productController.deleteById)
 
 //=========================================CART API's============================================================
-router.post("/users/:userId/cart", authentication, cartController.createCart)
-router.put("/users/:userId/cart", authentication, cartController.updateCart)
-router.get("/users/:userId/cart", authentication, cartController.getById)
-router.delete("/users/:userId/cart", authentication, cartController.deleteById)
+router.post("/users/:userId/cart", authentication, authorization, cartController.createCart)
+router.put("/users/:userId/cart", authentication, authorization, cartController.updateCart)
+router.get("/users/:userId/cart", authentication, authorization, cartController.getById)
+router.delete("/users/:userId/cart", authentication, authorization, cartController.deleteById)
 
 //=========================================ORDER API's============================================================
-router.post("/users/:userId/orders",authentication,authorization,orderController.createOrder)
-router.put("/users/:userId/orders",authentication,authorization,orderController.updateOrder)
+router.post("/users/:userId/orders", authentication, authorization, orderController.createOrder)
+router.put("/users/:userId/orders", authentication, authorization, orderController.updateOrder)
 
 
 router.all("/*", (req, res) => { res.status(400).send({ status: false, message: "Endpoint is not correct plese provide a proper end-point" }) })
